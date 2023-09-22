@@ -1,5 +1,13 @@
-FROM mcr.microsoft.com/dotnet/sdk:3.1
-COPY . /app/
-WORKDIR /app/
-RUN dotnet build
-ENTRYPOINT ["dotnet","run","--urls","http://0.0.0.0:5000"]
+FROM mcr.microsoft.com/dotnet/sdk:3.1 as build
+WORKDIR /app
+COPY *.csproj ./
+RUN dotnet restore
+
+COPY . ./
+RUN dotnet publish -c Release -o out
+
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1
+WORKDIR /app
+COPY --from=build /app/out .
+EXPOSE 80
+ENTRYPOINT ["dotnet" , "PoojaStores.dll" ]
